@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class='userForm'>
+    <form method="POST">
+        {{ user_form.as_p }}
+        <br>
+        {{ profile_form.as_p }}
+        <button type="submit">Sign Up</button>
+    </form>
+</div>
+{% endblock %}
