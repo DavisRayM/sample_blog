@@ -22,6 +22,7 @@ class UserProfile(models.Model):
         'Biography', blank=True, default='Introduction ? Why ?')
     gender = models.IntegerField(
         'Gender', blank=True, default=0, choices=GENDER_CHOICES)
+    email_confirmed = models.BooleanField('Email Confirmed', default=False)
 
     class Meta():
         """

@@ -3,6 +3,7 @@
 {% block content %}
 <div class='userForm'>
     <form method="POST">
+        {% csrf_token %}
         {{ user_form.as_p }}
         <br>
         {{ profile_form.as_p }}
