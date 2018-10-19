@@ -1,7 +1,7 @@
 """
 Views for Blog App
 """
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView
@@ -19,7 +19,7 @@ class PostDetailView(DetailView):
     context_object_name = 'post'
 
 
-class PostCreateView(LoginRequiredMixin, CreateView):
+class PostCreateView(UserPassesTestMixin, LoginRequiredMixin, CreateView):
     """
     Post Create View
     """
@@ -27,6 +27,13 @@ class PostCreateView(LoginRequiredMixin, CreateView):
     redirect_field_name = 'redirect_to'
     fields = ['title', 'content']
     template_name = 'blog/post_form.html'
+
+    def test_func(self):
+        """
+        Test Function
+        """
+        profile = self.request.user.userprofile
+        return profile.email_confirmed
 
     def form_valid(self, form):
         """
