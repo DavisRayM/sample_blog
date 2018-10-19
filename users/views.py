@@ -4,7 +4,7 @@ Views for User App
 from django.contrib.auth import login
 from django.contrib.auth.models import User
 from django.contrib.sites.shortcuts import get_current_site
-from django.http import Http404
+from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_text
@@ -41,38 +41,45 @@ def signup(request):
     """
     Signup View
     """
-    if request.method == 'POST':
-        user_form = UserRegistrationForm(request.POST)
-        profile_form = UserProfileRegistrationForm(request.POST)
+    # Only Admins and Non-Users Can Signup Users
+    if request.user.is_superuser or not request.user.is_authenticated:
+        if request.method == 'POST':
+            user_form = UserRegistrationForm(request.POST)
+            profile_form = UserProfileRegistrationForm(request.POST)
 
-        if user_form.is_valid() and profile_form.is_valid():
-            user = user_form.save()
-            profile = profile_form.save(commit=False)
-            profile.user = user
-            profile.save()
+            if user_form.is_valid() and profile_form.is_valid():
+                user = user_form.save()
+                profile = profile_form.save(commit=False)
+                profile.user = user
+                profile.save()
 
-            # Email Confirmation
-            current_site = get_current_site(request)
-            subject = 'Activate Your Account'
-            message = render_to_string(
-                'registration/account_activation_email.html', {
-                    'user': user,
-                    'domain': current_site.domain,
-                    'uid': urlsafe_base64_encode(
-                        force_bytes(user.pk)).decode(),
-                    'token': AccountActivationTokenGenerator().make_token(
-                        user),
-                })
-            user.email_user(subject, message)
-            login(request, user)
-            return redirect('home')
-    else:
-        user_form = UserRegistrationForm()
-        profile_form = UserProfileRegistrationForm()
-    return render(request, 'users/signup.html', {
-        'user_form': user_form,
-        'profile_form': profile_form
-    })
+                # Email Confirmation
+                current_site = get_current_site(request)
+                subject = 'Activate Your Account'
+                message = render_to_string(
+                    'registration/account_activation_email.html', {
+                        'user': user,
+                        'domain': current_site.domain,
+                        'uid': urlsafe_base64_encode(
+                            force_bytes(user.pk)).decode(),
+                        'token': AccountActivationTokenGenerator().make_token(
+                            user),
+                    })
+                user.email_user(subject, message)
+
+                # TODO: Redirect to a separate page
+                # login(request, user)
+                return redirect('home')
+        else:
+            user_form = UserRegistrationForm()
+            profile_form = UserProfileRegistrationForm()
+
+            return render(request, 'users/signup.html', {
+                'user_form': user_form,
+                'profile_form': profile_form
+            })
+
+    return HttpResponseForbidden()
 
 
 def profile(request):
