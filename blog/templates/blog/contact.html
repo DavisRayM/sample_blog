@@ -1,0 +1,61 @@
+{% extends 'headerless_base.html' %}
+
+{% block content %}
+    <header class="masthead" style="background-image: url('')">
+        <div class="overlay"></div>
+        <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-md-10 mx-auto">
+            <div class="page-heading">
+                <h1>Contact Me</h1>
+                <span class="subheading">Have questions? I have answers.</span>
+            </div>
+            </div>
+        </div>
+        </div>
+    </header>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+          <p>Want to get in touch? Fill out the form below to send me a message and I will get back to you as soon as possible!</p>
+
+          <form method="POST">
+            {% csrf_token %}
+            <div class="control-group">
+              <div class="form-group floating-label-form-group controls">
+                <label for="{{ form.contact_name.id_for_label }}">Name</label>
+                {{ form.contact_name }}
+                <p class="help-block text-danger"></p>
+              </div>
+            </div>
+            <div class="control-group">
+              <div class="form-group floating-label-form-group controls">
+                <label for="{{ form.contact_email.id_for_label }}">Email Address</label>
+                {{ form.contact_email }}
+                <p class="help-block text-danger"></p>
+              </div>
+            </div>
+            <div class="control-group">
+                <div class="form-group floating-label-form-group controls">
+                  <label for="{{ form.email_subject.id_for_label }}">Subject</label>
+                  {{ form.email_subject }}
+                  <p class="help-block text-danger"></p>
+                </div>
+              </div>
+            <div class="control-group">
+              <div class="form-group floating-label-form-group controls">
+                <label for="{{ form.content.id_for_label }}" >Message</label>
+                {{ form.content }}
+                <p class="help-block text-danger"></p>
+              </div>
+            </div>
+            <br>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary" >Send</button>
+              </div>
+          </form>
+        </div>
+      </div>
+    </div>
+{% endblock %}

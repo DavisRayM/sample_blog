@@ -1,8 +1,9 @@
 """
 Models for Blog App
 """
-from django.contrib.auth.models import User
 from django.db import models
+
+from users.models import UserProfile
 
 
 class Post(models.Model):
@@ -17,7 +18,7 @@ class Post(models.Model):
     content = models.TextField(
         'Content', blank=False, help_text='Represents post content.')
     author = models.ForeignKey(
-        User,
+        UserProfile,
         on_delete=models.SET_DEFAULT,
         related_name='posts',
         null=True,
@@ -35,14 +36,4 @@ class Post(models.Model):
         """
         String Representation Method for Post
         """
-        return f'{self.title} - {self.author_name}'
-
-    @property
-    def author_name(self):
-        """
-        Returns the Full Name of the Posts Author
-        """
-        try:
-            return self.author.get_full_name()  # pylint: disable=no-member
-        except AttributeError:
-            return 'Anonymous'
+        return f'{self.title} - {self.author.profile_name}'

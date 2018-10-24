@@ -6,6 +6,8 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path('about/', views.about, name='about-page'),
+    path('contact/', views.contact, name='contact-page'),
     path('', views.PostListView.as_view(), name='home'),
     path(
         'posts/<int:pk>/', views.PostDetailView.as_view(), name='post-detail'),

@@ -1,0 +1,5 @@
+Message Sent By {{ name }}.
+
+Subject: {{ subject }}
+
+{{ content|safe|striptags }}

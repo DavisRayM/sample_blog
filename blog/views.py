@@ -2,12 +2,59 @@
 Views for Blog App
 """
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.models import User
+from django.core.mail import EmailMessage
 from django.http import HttpResponseForbidden, HttpResponseRedirect
+from django.shortcuts import redirect, render
+from django.template.loader import get_template
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
+from .forms import ContactForm
 from .models import Post
+
+
+def about(request):
+    """
+    About Page View
+    """
+    return render(request, 'blog/about.html')
+
+
+def contact(request):
+    """
+    Contact Us Page View
+    """
+    form_class = ContactForm
+
+    if request.method == 'POST':
+        form = form_class(data=request.POST)
+
+        if form.is_valid():
+            contact_name = request.POST.get('contact_name')
+            contact_email = request.POST.get('contact_email')
+            form_content = request.POST.get('content', '')
+            email_subject = request.POST.get('email_subject', '')
+
+            template = get_template('blog/contact_template.txt')
+            context = {
+                'name': contact_name,
+                'subject': email_subject,
+                'content': form_content
+            }
+
+            content = template.render(context)
+
+            email = EmailMessage(
+                email_subject, content,
+                to=['davisraymondmuro@outlook.com'],
+                headers={'Reply-To': contact_email})
+
+            email.send()
+            return redirect('contact-page')
+    else:
+        return render(request, 'blog/contact.html', {'form': form_class})
 
 
 class PostDetailView(DetailView):
@@ -32,15 +79,21 @@ class PostCreateView(UserPassesTestMixin, LoginRequiredMixin, CreateView):
         """
         Test Function
         """
-        profile = self.request.user.userprofile
-        return profile.email_confirmed
+        try:
+            profile = self.request.user.userprofile
+            return profile.email_confirmed
+        # pylint: disable=no-member
+        except (User.DoesNotExist, AttributeError):
+            if self.request.user.is_superuser:
+                return True
+            return False
 
     def form_valid(self, form):
         """
         Custom form_valid method
         """
         post = form.save(commit=False)
-        post.author = self.request.user
+        post.author = self.request.user.userprofile
         post.save()
         return HttpResponseRedirect(self.get_success_url(post.id))
 
@@ -67,7 +120,7 @@ class PostUpdateView(LoginRequiredMixin, UpdateView):
         post = self.get_object()
 
         # Only the author of the Post is able to edit the Post
-        if post.author != self.request.user:
+        if post.author != self.request.user.userprofile:
             return HttpResponseForbidden
         return super().dispatch(request, *args, **kwargs)
 
@@ -96,7 +149,7 @@ class PostDeleteView(LoginRequiredMixin, DeleteView):
         post = self.get_object()
         user = self.request.user
 
-        if post.author != user and user.is_superuser:
+        if post.author != user.userprofile and user.is_superuser:
             return HttpResponseForbidden
         return super().dispatch(request, *args, **kwargs)
 
